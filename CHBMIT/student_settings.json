@@ -1,6 +1,6 @@
 {
     "dataset": "CHBMIT",
     "datadir": "Dataset",
-    "cachedir": "cachedir-student",
-    "resultdir": "student-CHBMIT"
+    "cachedir": "cache_student",
+    "resultdir": "student_CHBMIT"
 }

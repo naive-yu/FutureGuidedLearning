@@ -11,7 +11,7 @@ import numpy as np
 
 from utils.load_signals_student import PrepDataStudent
 from utils.prep_data_student import train_val_test_split_continual_s
-from models.models import CNN_LSTM_Model, MViT
+from models.model import CNN_LSTM_Model, MViT
 
 # --- Helper Functions ---
 
@@ -86,7 +86,7 @@ def _build_optimizer(model, optimizer_type, lr=5e-4):
 def _build_scheduler(optimizer):
     """Builds a learning rate scheduler."""
     return torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, 'min', factor=0.1, patience=3, verbose=True
+        optimizer, 'min', factor=0.1, patience=3
     )
 
 def _run_training_loop(model, train_loader, val_loader, epochs, optimizer, scheduler,

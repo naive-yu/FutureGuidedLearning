@@ -111,6 +111,13 @@ class TransformerEncoder(nn.Module):
     def forward(self, x):
         return self.transformer_encoder(x)
 
+class ParameterModule(nn.Module):
+    def __init__(self, tensor):
+        super().__init__()
+        self.weight = nn.Parameter(tensor)
+
+    def forward(self):
+        return self.weight
 
 class MViT(nn.Module):
     """
@@ -136,8 +143,8 @@ class MViT(nn.Module):
         num_patches = (X_shape[3] // patch_size[0]) * (X_shape[4] // patch_size[1])
         return nn.ModuleDict({
             'patch_embed': PatchEmbedding(patch_size, embed_dim),
-            'pos_embed': nn.Parameter(torch.zeros(1, num_patches + 1, embed_dim)),
-            'cls_token': nn.Parameter(torch.zeros(1, 1, embed_dim)),
+            'pos_embed': ParameterModule(torch.zeros(1, num_patches + 1, embed_dim)),
+            'cls_token': ParameterModule(torch.zeros(1, 1, embed_dim)),
             'encoder': TransformerEncoder(embed_dim, num_heads, hidden_dim, num_layers, dropout)
         })
 
@@ -147,11 +154,11 @@ class MViT(nn.Module):
         batch_size = embedded_patches.size(0)
         
         # Prepend CLS token
-        cls_tokens = processor['cls_token'].expand(batch_size, -1, -1)
+        cls_tokens = processor['cls_token']().expand(batch_size, -1, -1)
         x = torch.cat((cls_tokens, embedded_patches), dim=1)
         
         # Add positional embedding
-        x += processor['pos_embed']
+        x += processor['pos_embed']()
         
         # Pass through Transformer encoder
         encoded_output = processor['encoder'](x)
@@ -162,7 +169,7 @@ class MViT(nn.Module):
     def forward(self, x):
         # Assuming input shape (Batch, Channels, Time=1, Height, Width)
         # Squeeze the time dimension
-        x = x.squeeze(2)
+        x = x.squeeze(1)
         
         # Process each channel independently
         channel_outputs = [

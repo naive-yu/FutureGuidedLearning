@@ -1,0 +1,14 @@
+__pycache__
+record.txt
+
+.vscode
+Dataset/*
+
+record.txt
+best_model_1_trial_*.pth
+pytorch_models/*
+cache_student/*
+cache_teacher/*
+
+Detection_results.json
+Prediction_results.json

@@ -2,20 +2,35 @@ import os
 import pickle
 import hickle
 
-def save_hickle_file(filename, data):
-    filename = filename + '.hickle'
-    print ('Saving to %s' % filename)
+# def save_hickle_file(filename, data):
+#     filename = filename + '.hickle'
+#     print ('Saving to %s' % filename)
 
-    with open(filename, 'w') as f:
-        #hickle.dump(data, f, mode='w')
-        hickle.dump(data, filename, mode='w')
+#     with open(filename, 'w') as f:
+#         #hickle.dump(data, f, mode='w')
+#         hickle.dump(data, filename, mode='w')
+
+def save_hickle_file(filename, data):
+    import pickle
+    filename = filename + '.pkl'
+    with open(filename, "wb") as f:
+        pickle.dump(data, f, protocol=4)
+
+# def load_hickle_file(filename):
+#     filename = filename + '.hickle'
+#     if os.path.isfile(filename):
+#         print ('Loading %s ...' % filename)
+#         data = hickle.load(filename)
+#         return data
+#     return None
 
 def load_hickle_file(filename):
-    filename = filename + '.hickle'
+    import pickle
+    filename = filename + '.pkl'
     if os.path.isfile(filename):
         print ('Loading %s ...' % filename)
-        data = hickle.load(filename)
-        return data
+        with open(filename, "rb") as f:
+            return pickle.load(f)
     return None
 
 def save_pickle_file(filename, data):

@@ -1,4 +1,5 @@
 import os
+import warnings
 import numpy as np
 import pandas as pd
 from mne.io import read_raw_edf
@@ -11,12 +12,12 @@ from utils.save_load import save_hickle_file, load_hickle_file
 CHBMIT_CHANNEL_CONFIG = {
     'default': [
         'FP1-F7', 'F7-T7', 'T7-P7', 'P7-O1', 'FP1-F3', 'F3-C3', 'C3-P3', 'P3-O1', 
-        'FP2-F4', 'F4-C4', 'C4-P4', 'P4-O2', 'FP2-F8', 'F8-T8', 'T8-P8', 'P8-O2', 
+        'FP2-F4', 'F4-C4', 'C4-P4', 'P4-O2', 'FP2-F8', 'F8-T8', 'T8-P8-0', 'P8-O2', 
         'FZ-CZ', 'CZ-PZ', 'P7-T7', 'T7-FT9', 'FT9-FT10', 'FT10-T8'
     ],
     'subset_13_16': [ # For patients 13, 16
         'FP1-F7', 'F7-T7', 'T7-P7', 'P7-O1', 'FP1-F3', 'F3-C3', 'C3-P3', 'P3-O1', 
-        'FP2-F4', 'F4-C4', 'C4-P4', 'P4-O2', 'FP2-F8', 'F8-T8', 'T8-P8', 'FZ-CZ', 'CZ-PZ'
+        'FP2-F4', 'F4-C4', 'C4-P4', 'P4-O2', 'FP2-F8', 'F8-T8', 'T8-P8-0', 'FZ-CZ', 'CZ-PZ'
     ],
     'subset_4': { # For patient 4
         'FP1-F7', 'F7-T7', 'T7-P7', 'P7-O1', 'FP1-F3', 'F3-C3', 'C3-P3', 'P3-O1', 
@@ -74,9 +75,13 @@ def load_signals_CHBMIT(data_dir, target, data_type):
     else: chs = CHBMIT_CHANNEL_CONFIG['default']
     
     for filename in filenames:
-        rawEEG = read_raw_edf(os.path.join(patient_dir, filename), preload=True, verbose=0)
-        rawEEG.pick_channels(chs, ordered=False)
-        if target == '13' and 'T8-P8' in rawEEG.ch_names:
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="Channel names are not unique*", category=RuntimeWarning)
+            rawEEG = read_raw_edf(os.path.join(patient_dir, filename), preload=True, verbose=0)
+        # rawEEG = read_raw_edf(os.path.join(patient_dir, filename), preload=True, verbose=0)
+        # rawEEG.pick_channels(chs, ordered=False)
+        rawEEG.pick(chs)
+        if target == '13' and 'T8-P8-0' in rawEEG.ch_names:
             rawEEG.drop_channels('T8-P8')
         
         data = rawEEG.to_data_frame().values
@@ -123,7 +128,7 @@ class PrepDataTeacher():
         print(f'Preprocessing {self.type} data for patient {self.target}...')
         X_processed, y_processed = [], []
         
-        df_sampling = pd.read_csv('sampling_CHBMIT.csv')
+        df_sampling = pd.read_csv(os.path.join('Dataset', 'sampling_CHBMIT.csv'))
         ictal_ovl_len = int(self.freq * df_sampling[df_sampling.Subject == int(self.target)].ictal_ovl.values[0])
         
         for data_segment in data_generator:

@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 # from utils.model_stuff import EarlyStopping
 from utils.load_signals_teacher import PrepDataTeacher
 from utils.prep_data_teacher import train_val_test_split_continual_t
-from models.models import CNN_LSTM_Model
+from models.model import CNN_LSTM_Model
 
 # --- Helper Functions ---
 
@@ -63,7 +63,7 @@ def _build_model_and_optimizer(input_shape, optimizer_type, device, lr=5e-4):
 def _build_scheduler(optimizer):
     """Builds a learning rate scheduler."""
     return torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, 'min', factor=0.1, patience=3, verbose=True
+        optimizer, 'min', factor=0.1, patience=3
     )
 
 def _train_epoch(model, data_loader, criterion, optimizer, device, clip_value):
@@ -197,7 +197,7 @@ def train_teacher_model(target, epochs, optimizer_type, patience, val_ratio, cli
     # --- Load Best Model and Evaluate ---
     print(f"Loading best model from {model_path} for evaluation...")
     try:
-        best_teacher = torch.load(model_path).to(device)
+        best_teacher = torch.load(model_path, weights_only=False).to(device)
         auc_test = _evaluate_model(best_teacher, X_test, y_test)
         print(f'Patient {target} - Best Model Test AUC: {auc_test:.4f}')
     except FileNotFoundError:

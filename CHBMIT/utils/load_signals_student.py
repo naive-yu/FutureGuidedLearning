@@ -1,4 +1,5 @@
 import os
+import warnings
 import numpy as np
 import pandas as pd
 from mne.io import read_raw_edf
@@ -12,14 +13,14 @@ from utils.save_load import save_hickle_file, load_hickle_file
 CHBMIT_CHANNEL_CONFIG = {
     'default': [
         'FP1-F7', 'F7-T7', 'T7-P7', 'P7-O1', 'FP1-F3', 'F3-C3', 'C3-P3', 'P3-O1', 
-        'FP2-F4', 'F4-C4', 'C4-P4', 'P4-O2', 'FP2-F8', 'F8-T8', 'T8-P8', 'P8-O2', 
+        'FP2-F4', 'F4-C4', 'C4-P4', 'P4-O2', 'FP2-F8', 'F8-T8', 'T8-P8-0', 'P8-O2', 
         'FZ-CZ', 'CZ-PZ', 'P7-T7', 'T7-FT9', 'FT9-FT10', 'FT10-T8'
     ],
-    'subset_1': [ # For patients 13, 16
+    'subset_13_16': [ # For patients 13, 16
         'FP1-F7', 'F7-T7', 'T7-P7', 'P7-O1', 'FP1-F3', 'F3-C3', 'C3-P3', 'P3-O1', 
-        'FP2-F4', 'F4-C4', 'C4-P4', 'P4-O2', 'FP2-F8', 'F8-T8', 'T8-P8', 'FZ-CZ', 'CZ-PZ'
+        'FP2-F4', 'F4-C4', 'C4-P4', 'P4-O2', 'FP2-F8', 'F8-T8', 'T8-P8-0', 'FZ-CZ', 'CZ-PZ'
     ],
-    'subset_2': { # For patient 4
+    'subset_4': { # For patient 4
         'FP1-F7', 'F7-T7', 'T7-P7', 'P7-O1', 'FP1-F3', 'F3-C3', 'C3-P3', 'P3-O1', 
         'FP2-F4', 'F4-C4', 'C4-P4', 'P4-O2', 'FP2-F8', 'F8-T8', 'P8-O2', 'FZ-CZ', 
         'CZ-PZ', 'P7-T7', 'T7-FT9', 'FT10-T8'
@@ -73,7 +74,10 @@ def calculate_interictal_hours():
         total_duration_seconds = 0.0
         for fname in edf_files:
             file_path = os.path.join(patient_dir, fname)
-            raw = read_raw_edf(file_path, preload=False, verbose=False)
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", message="Channel names are not unique*", category=RuntimeWarning)
+                raw = read_raw_edf(file_path, preload=False, verbose=False)
+            # raw = read_raw_edf(file_path, preload=False, verbose=False)
             total_duration_seconds += raw.n_times / raw.info['sfreq']
             
         hours[target_id] = total_duration_seconds / 3600
@@ -101,8 +105,11 @@ def load_signals_CHBMIT(data_dir, target, data_type):
         # Complex logic for yielding specific segments of data would go here,
         # tailored to ictal (pre-seizure) and interictal periods.
         # This simplified version yields the full file data as a placeholder.
-        raw = read_raw_edf(os.path.join(patient_dir, filename), preload=True, verbose=False)
-        yield raw.get_data().T
+        # raw = read_raw_edf(os.path.join(patient_dir, filename), preload=True, verbose=False)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="Channel names are not unique*", category=RuntimeWarning)
+            raw = read_raw_edf(os.path.join(patient_dir, filename), preload=True, verbose=False)
+            yield raw.get_data().T
 
 class PrepDataStudent():
     def __init__(self, target, type, settings):
