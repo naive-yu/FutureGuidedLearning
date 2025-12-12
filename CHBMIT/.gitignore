@@ -6,9 +6,14 @@ Dataset/*
 
 record.txt
 best_model_1_trial_*.pth
+best_student_kd_*.pth
+
 pytorch_models/*
 cache_student/*
 cache_teacher/*
 
 Detection_results.json
 Prediction_results.json
+
+FGL_results.json
+FGL_results.txt

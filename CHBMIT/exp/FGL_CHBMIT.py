@@ -11,7 +11,7 @@ import numpy as np  # Added for np.nan
 
 from utils.load_signals_student import PrepDataStudent
 from utils.prep_data_student import train_val_test_split_continual_s
-from models.models import CNN_LSTM_Model
+from models.model import CNN_LSTM_Model
 
 # --- Helper Functions ---
 
@@ -57,7 +57,7 @@ def _build_student_and_optimizer(input_shape, optimizer_type, device, lr=5e-4):
 def _build_scheduler(optimizer):
     """Builds a learning rate scheduler."""
     return torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, 'min', factor=0.1, patience=3, verbose=True
+        optimizer, 'min', factor=0.1, patience=3
     )
 
 def _compute_distillation_loss(student_logits, teacher_logits, temp):
@@ -143,7 +143,7 @@ def distill_student_model(target, epochs, trials, optimizer_type, alpha, tempera
         print(f"Error: Teacher model '{teacher_path}' not found. Skipping patient {target}.")
         return []
         
-    teacher = torch.load(teacher_path).to(device)
+    teacher = torch.load(teacher_path, weights_only=False).to(device)
     
     # Prepare data, including validation loader
     train_loader, val_loader, X_test, y_test, shape = _prepare_data(

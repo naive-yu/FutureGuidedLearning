@@ -154,7 +154,16 @@ def _evaluate_model(model, X_test, y_test):
     
     y_true = y_test.cpu().numpy()
     y_probs = F.softmax(predictions_raw, dim=1)[:, 1].cpu().numpy()
-    
+
+    # ========== output ==========
+    print(f'\n=== TEST SET DIAGNOSIS ===')
+    print(f'Total test samples: {len(y_true)}')
+    print(f'Class distribution: {np.bincount(y_true)}')
+    print(f'  - Interictal (0): {np.sum(y_true == 0)} samples')
+    print(f'  - Ictal (1): {np.sum(y_true == 1)} samples')
+    print(f'Probability range: [{y_probs.min():.4f}, {y_probs.max():.4f}]')
+    print(f'Probability mean: {y_probs.mean():.4f}')
+
     # Calculate metrics
     threshold = find_best_threshold(y_true, y_probs)
     y_pred_binary = (y_probs >= threshold).astype(int)
